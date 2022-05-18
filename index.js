@@ -15,14 +15,8 @@ app.get("/api/notes", (req, res) => {
   res.json(fullNotes.slice(1));
 });
 
-app.post("/api/notes", (req, res) => {
-  const { title, text } = req.body;
-  const createdNotes = { title: title, text: text, id: uuidv4 };
-  const storedData = fs.readFileSync("./db/db.json", "utf-8");
-  const formattedNotes = [].concat(JSON.parse(storedData));
-  const newNotes = [...formattedNotes, createdNotes];
-  fs.writeFileSync("db/db.json", JSON.stringify(newNotes));
-  res.json(newNotes);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
 app.get("/notes", (req, res) => {
@@ -31,6 +25,16 @@ app.get("/notes", (req, res) => {
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
+app.post("/api/notes", (req, res) => {
+  const { title, text } = req.body;
+  const createdNotes = { title: title, text: text, id: uuidv4 };
+  const storedData = fs.readFileSync("./db/db.json", "utf-8");
+  const formattedNotes = [].concat(JSON.parse(storedData));
+  const newNotes = [...formattedNotes, createdNotes];
+  fs.writeFileSync("db/db.json", JSON.stringify(newNotes));
+  res.json(newNotes);
 });
 
 app.listen(PORT, () => console.log(`listening on PORT: ${PORT}`));

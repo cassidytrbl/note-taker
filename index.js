@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
-const fullNotes = require("./db/db.json");
+// const fullNotes = require("./db/db.json");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
@@ -12,7 +12,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 app.get("/api/notes", (req, res) => {
-  res.json(fullNotes.slice(1));
+  const storedData = fs.readFileSync("./db/db.json", "utf-8");
+  res.json(JSON.parse(storedData));
 });
 
 app.get("/", (req, res) => {
@@ -29,10 +30,25 @@ app.get("*", (req, res) => {
 
 app.post("/api/notes", (req, res) => {
   const { title, text } = req.body;
-  const createdNotes = { title: title, text: text, id: uuidv4 };
+  const createdNotes = { title: title, text: text, id: uuidv4() };
   const storedData = fs.readFileSync("./db/db.json", "utf-8");
-  const formattedNotes = [].concat(JSON.parse(storedData));
-  const newNotes = [...formattedNotes, createdNotes];
+  const origNotes = JSON.parse(storedData);
+  const newNotes = [...origNotes, createdNotes];
+  fs.writeFileSync("db/db.json", JSON.stringify(newNotes));
+  res.json(newNotes);
+});
+
+app.delete("/api/notes/:id", (req, res) => {
+  let id = req.params.id;
+  const { title, text } = req.body;
+  const storedData = fs.readFileSync("./db/db.json", "utf-8");
+  const notes = JSON.parse(storedData);
+  const newNotes = [];
+  for (const note of notes) {
+    if(note.id != id) {
+      newNotes.push(note);
+		}
+	}
   fs.writeFileSync("db/db.json", JSON.stringify(newNotes));
   res.json(newNotes);
 });
